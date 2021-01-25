@@ -50,47 +50,91 @@ void wrap_sleep(long t)
 {
     struct timeval v;
     struct timeval f;
+    long val;
 
     gettimeofday(&v, NULL);
     gettimeofday(&f,NULL);
-    while((((f.tv_sec * 1000000) + (f.tv_usec))
-    - ((v.tv_sec * 1000000) + (v.tv_usec))) < t)
+    printf("start= %ld\n",elapsed(v));
+
+    while(val < t)
     {
         usleep(1);
         gettimeofday(&f, NULL);
+        val = ((f.tv_sec * 1000000) + (f.tv_usec) - ((v.tv_sec * 1000000) + (v.tv_usec)));
     }
+    printf("end = %ld\n", elapsed(v));
     return;
+}
+
+int time_diff(struct timeval last, struct timeval actual)
+{
+    int s;
+    int m;
+
+    s = actual.tv_sec - last.tv_sec;
+    m = actual.tv_usec - last.tv_usec;
+    if (s < 0)
+        s *= -1;
+    if (m < 0)
+        m *= -1;
+    return s * 1000 + m / 1000;
 }
 
 void *philo_do(void *arg)
 {
     philo *p;
     p = (philo *) arg;
-    unsigned int last_meal = 0;
+    struct timeval last;
+    struct timeval actual;
 
-    while (last_meal < p->p.die) {
-        printf("%ld philo %d is thinking\n", elapsed(p->start),p->n + 1);
+    last = p->start;
+    gettimeofday(&actual, 0);
+    while (time_diff(last, actual) < p->p.die) {
         pthread_mutex_lock(p->txt);
-        pthread_mutex_lock(p->fl->m);
+        printf("%ld philo %d is thinking\n", elapsed(p->start),p->n + 1);
+        pthread_mutex_unlock(p->txt);
+        if (p->n % 2 == 1) {
+            pthread_mutex_lock(p->fr->m);
+        }
+        else {
+            pthread_mutex_lock(p->fl->m);
+        }
+        pthread_mutex_lock(p->txt);
         printf("%ld philo %d has taken a fork\n",elapsed(p->start),p->n + 1);
-        pthread_mutex_lock(p->fr->m);
-        printf("%ld philo %d has taken a fork\n", elapsed(p->start),p->n + 1);
+        pthread_mutex_unlock(p->txt);
+        if (p->n % 2 == 1) {
+            pthread_mutex_lock(p->fl->m);
+        }
+        else {
+            pthread_mutex_lock(p->fr->m);
+        }
+        pthread_mutex_lock(p->txt);
+        printf("%ld philo %d has taken a fork\n",elapsed(p->start),p->n + 1);
+        //pthread_mutex_unlock(p->txt);
+//        pthread_mutex_lock(p->fl->m);
+//        pthread_mutex_lock(p->fr->m);
         printf("%ld philo %d is eating\n", elapsed(p->start),p->n + 1);
 //        usleep(p->p.eat * 1000);
+        pthread_mutex_unlock(p->txt);
         wrap_sleep(p->p.eat * 1000);
-        printf("%ld philo %d END eating\n", elapsed(p->start),p->n + 1);
+        //printf("%ld philo %d END eating\n", elapsed(p->start),p->n + 1);
+//        if (p->n == 1)
+//            printf("ELA LAST: %ld \n", elapsed(p->start));
 
-        last_meal = elapsed(p->start) - last_meal;
+        gettimeofday(&last, 0);
         pthread_mutex_unlock(p->fr->m);
         pthread_mutex_unlock(p->fl->m);
+        pthread_mutex_lock(p->txt);
         printf("%ld philo %d is sleeping\n", elapsed(p->start),p->n + 1);
         pthread_mutex_unlock(p->txt);
         wrap_sleep(p->p.sleep * 1000);
-        if (p->n == 1)
-            printf("INFO: %u %d\n", last_meal, p->p.die);
+//        if (p->n == 1)
+//            printf("INFO:  %d\n",  p->p.die);
+        gettimeofday(&actual, 0);
     }
-    printf("%ld philo %d died\n", elapsed(p->start),p->n + 1);
-
+    pthread_mutex_lock(p->txt);
+    printf("%ld philo %d died bc %d\n", elapsed(p->start),p->n + 1, time_diff(last, actual));
+    pthread_mutex_unlock(p->txt);
     return (void*)p;
 }
 
