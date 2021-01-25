@@ -39,11 +39,9 @@ forks *init_forks(int n)
 long elapsed(struct timeval t)
 {
     struct timeval c;
-    long d;
 
     gettimeofday(&c, NULL);
-    d = (c.tv_usec > t.tv_usec) ? c.tv_usec - t.tv_usec : t.tv_usec - c.tv_usec;
-    return (((c.tv_sec - t.tv_sec) * 1000000  + d) / 1000);
+    return ((c.tv_sec * 1000000 + c.tv_usec) - (t.tv_sec * 1000000 + t.tv_usec)) / 1000;
 }
 
 void wrap_sleep(long t)
@@ -55,12 +53,14 @@ void wrap_sleep(long t)
     gettimeofday(&v, NULL);
     gettimeofday(&f,NULL);
     printf("start= %ld\n",elapsed(v));
+    val = (f.tv_sec * 1000000 + f.tv_usec) - (v.tv_sec * 1000000 + v.tv_usec);
 
     while(val < t)
     {
-        usleep(1);
+        usleep(50);
         gettimeofday(&f, NULL);
-        val = ((f.tv_sec * 1000000) + (f.tv_usec) - ((v.tv_sec * 1000000) + (v.tv_usec)));
+        val = (f.tv_sec * 1000000 + f.tv_usec) - (v.tv_sec * 1000000 + v.tv_usec);
+//        printf("VAL = %ld\n", val / 1000);
     }
     printf("end = %ld\n", elapsed(v));
     return;
@@ -68,16 +68,7 @@ void wrap_sleep(long t)
 
 int time_diff(struct timeval last, struct timeval actual)
 {
-    int s;
-    int m;
-
-    s = actual.tv_sec - last.tv_sec;
-    m = actual.tv_usec - last.tv_usec;
-    if (s < 0)
-        s *= -1;
-    if (m < 0)
-        m *= -1;
-    return s * 1000 + m / 1000;
+    return ((actual.tv_sec * 1000000 + actual.tv_usec) - (last.tv_sec * 1000000 + last.tv_usec)) / 1000;
 }
 
 void *philo_do(void *arg)
@@ -86,10 +77,12 @@ void *philo_do(void *arg)
     p = (philo *) arg;
     struct timeval last;
     struct timeval actual;
+    int i;
 
+    i = 0;
     last = p->start;
     gettimeofday(&actual, 0);
-    while (time_diff(last, actual) < p->p.die) {
+    while (time_diff(last, actual) < p->p.die || i == 0) {
         pthread_mutex_lock(p->txt);
         printf("%ld philo %d is thinking\n", elapsed(p->start),p->n + 1);
         pthread_mutex_unlock(p->txt);
@@ -113,24 +106,35 @@ void *philo_do(void *arg)
         //pthread_mutex_unlock(p->txt);
 //        pthread_mutex_lock(p->fl->m);
 //        pthread_mutex_lock(p->fr->m);
+        if (time_diff(last, actual) > p->p.die && i != 0)
+        {
+            printf("%ld philo %d died bc %d\n", elapsed(p->start),p->n + 1, time_diff(last, actual));
+            pthread_mutex_unlock(p->txt);
+            break;
+        }
         printf("%ld philo %d is eating\n", elapsed(p->start),p->n + 1);
 //        usleep(p->p.eat * 1000);
         pthread_mutex_unlock(p->txt);
+        gettimeofday(&last, 0);
         wrap_sleep(p->p.eat * 1000);
+        printf("%ld philo %d FINISh eatgin\n", elapsed(p->start),p->n + 1);
+
         //printf("%ld philo %d END eating\n", elapsed(p->start),p->n + 1);
 //        if (p->n == 1)
 //            printf("ELA LAST: %ld \n", elapsed(p->start));
 
-        gettimeofday(&last, 0);
         pthread_mutex_unlock(p->fr->m);
         pthread_mutex_unlock(p->fl->m);
         pthread_mutex_lock(p->txt);
         printf("%ld philo %d is sleeping\n", elapsed(p->start),p->n + 1);
         pthread_mutex_unlock(p->txt);
         wrap_sleep(p->p.sleep * 1000);
+        printf("%ld philo %d FINISh Sleep\n", elapsed(p->start),p->n + 1);
 //        if (p->n == 1)
-//            printf("INFO:  %d\n",  p->p.die);
+//      printf("INFO:  %d\n",  p->p.die);
         gettimeofday(&actual, 0);
+        printf("INFO:  %d, diff=%d\n",  p->p.die, time_diff(last, actual));
+        i++;
     }
     pthread_mutex_lock(p->txt);
     printf("%ld philo %d died bc %d\n", elapsed(p->start),p->n + 1, time_diff(last, actual));
