@@ -28,7 +28,7 @@ typedef struct	{
 
 typedef struct	{
 	int				n;
-	t_param_philo		p;
+	t_param_philo	p;
 	t_forks			*fl;
 	t_forks			*fr;
 	pthread_t		*th;

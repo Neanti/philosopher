@@ -12,7 +12,7 @@
 
 #include "utils.h"
 
-int			is_number(char *s)
+int				is_number(char *s)
 {
 	int i;
 
@@ -24,7 +24,7 @@ int			is_number(char *s)
 	return (1);
 }
 
-int			ft_toint(char *s)
+int				ft_toint(char *s)
 {
 	int i;
 	int r;
@@ -42,8 +42,8 @@ int			ft_toint(char *s)
 
 t_param_philo	*fill_arg(char **av, int ac)
 {
-	int			*t;
-	int			i;
+	int				*t;
+	int				i;
 	t_param_philo	*p;
 
 	if (!(p = malloc(sizeof(t_param_philo))))

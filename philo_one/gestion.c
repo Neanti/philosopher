@@ -12,21 +12,27 @@
 
 #include "utils.h"
 
-t_philo		*init_philo(t_param_philo *arg, int i, t_forks *fl, t_forks *fr, pthread_mutex_t *txt, struct timeval start, t_forks *end)
+t_philo		*init_philo(t_param_philo *arg, int i, t_forks *fl, t_forks *fr, t_forks *end)
 {
-	t_philo		*p;
-	pthread_t	*t;
+	t_philo			*p;
+	pthread_t		*t;
+	pthread_mutex_t	*txt;
+	struct timeval start;
 
+	if (!(txt = malloc(sizeof(pthread_mutex_t))))
+		return (0);
+	pthread_mutex_init(txt, 0);
 	if (!(p = malloc(sizeof(t_philo))))
-		return (NULL);
+		return (0);
 	if (!(t = malloc(sizeof(pthread_t))))
-		return (NULL);
+		return (0);
 	p->p = *arg;
 	p->n = i;
 	p->th = t;
 	p->fl = fl;
 	p->fr = fr;
 	p->txt = txt;
+	gettimeofday(&start, 0);
 	p->start = start;
 	p->end = end;
 	return (p);
