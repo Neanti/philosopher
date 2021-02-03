@@ -12,79 +12,7 @@
 
 #include "utils.h"
 
-int		check_elapsed(t_philo *p, struct timeval last)
-{
-	if (p->end->n == 1)
-		return (-1);
-	if (elapsed(last) > p->p.die)
-	{
-		if (p->end->n == -1)
-		{
-			pthread_mutex_lock(p->end->m);
-			p->end->n = 1;
-			pthread_mutex_unlock(p->end->m);
-		}
-		return (-1);
-	}
-	return (1);
-}
-
-int		take_forks(t_philo *p, struct timeval last)
-{
-	if (check_elapsed(p, last) == -1)
-		return (-1);
-	if (p->n % 2 == 1)
-		pthread_mutex_lock(p->fr->m);
-	else
-		pthread_mutex_lock(p->fl->m);
-	if (check_elapsed(p, last) == -1)
-		return (-1);
-	pthread_mutex_lock(p->txt);
-	printf("%ld philo %d has taken a fork\n", elapsed(p->start), p->n + 1);
-	pthread_mutex_unlock(p->txt);
-	if (check_elapsed(p, last) == -1)
-		return (-1);
-	if (p->n % 2 == 1)
-		pthread_mutex_lock(p->fl->m);
-	else
-		pthread_mutex_lock(p->fr->m);
-	if (check_elapsed(p, last) == -1)
-		return (-1);
-	pthread_mutex_lock(p->txt);
-	printf("%ld philo %d has taken a fork\n", elapsed(p->start), p->n + 1);
-	return (0);
-}
-
-void	export_one(t_philo *p, struct timeval last)
-{
-	printf("%ld philo %d is eating\n", elapsed(p->start), p->n + 1);
-	pthread_mutex_unlock(p->txt);
-	wrap_sleep(p->p.eat * 1000);
-	pthread_mutex_unlock(p->fr->m);
-	pthread_mutex_unlock(p->fl->m);
-	pthread_mutex_lock(p->txt);
-	printf("%ld philo %d is sleeping\n", elapsed(p->start), p->n + 1);
-	pthread_mutex_unlock(p->txt);
-	wrap_sleep(p->p.sleep * 1000);
-}
-
-void	disp_dead(t_philo *p)
-{
-	pthread_mutex_unlock(p->fl->m);
-	pthread_mutex_unlock(p->fr->m);
-	pthread_mutex_lock(p->txt);
-	printf("%ld philo %d died\n", elapsed(p->start), p->n + 1);
-	pthread_mutex_unlock(p->txt);
-}
-
-void	disp_think(t_philo *p)
-{
-	pthread_mutex_lock(p->txt);
-	printf("%ld philo %d is thinking\n", elapsed(p->start), p->n + 1);
-	pthread_mutex_unlock(p->txt);
-}
-
-void	*philo_do(void *arg)
+void			*philo_do(void *arg)
 {
 	t_philo			*p;
 	struct timeval	last;
@@ -105,72 +33,95 @@ void	*philo_do(void *arg)
 		if (take_forks(p, last) == -1)
 			break ;
 		gettimeofday(&last, 0);
-		export_one(p, last);
+		export_one(p);
 		i++;
 	}
 	disp_dead(p);
 	return ((void *)p);
 }
 
-//pthread_t *create_philo(t_param_philo *arg)
-//{
-//
-//}
+t_forks			**create_forks(t_param_philo *arg)
+{
+	t_forks **list;
 
-int		main(int ac, char **av)
+	if (!(list = malloc(sizeof(t_forks*) * 4)))
+		return (0);
+	list[2] = init_forks(arg->ph - 1);
+	list[3] = init_forks(-1);
+	if (list[2] == 0 || list[3] == 0)
+		return (0);
+	list[1] = list[2];
+	return (list);
+}
+
+t_param_philo	*arg_check(int ac, char **av)
 {
 	int				i;
 	t_param_philo	*arg;
-	t_philo			*p;
-	t_forks			*fl;
-	t_forks			*fr;
-	t_forks			*last;
-	t_forks			*end;
-	pthread_t		*t_list;
 
 	i = 1;
 	if (ac < 5 || ac > 6)
-		return (error_arg());
+		return (0);
 	while (i < ac)
 	{
 		if (!is_number(av[i]))
-			return (error_arg());
+			return (0);
 		i++;
 	}
 	if ((arg = fill_arg(av, ac)) == NULL)
-		return (error_malloc());
+		return (0);
+	return (arg);
+}
+
+pthread_t		run_philo(int i, t_param_philo *arg, t_forks **f_list)
+{
+	t_philo *p;
+
+	if (i == arg->ph - 1)
+	{
+		if (!(p = init_philo_e(arg, i, f_list)))
+			return (0);
+	}
+	else if (i == 0)
+	{
+		f_list[0] = init_forks(i);
+		if (!(p = init_philo_s(arg, i, f_list)))
+			return (0);
+	}
+	else
+	{
+		f_list[0] = init_forks(i);
+		if (!(p = init_philo_m(arg, i, f_list)))
+			return (0);
+	}
+	f_list[1] = f_list[0];
+	pthread_create(p->th, 0, philo_do, p);
+	return (*(p->th));
+}
+
+int				main(int ac, char **av)
+{
+	int				i;
+	t_param_philo	*arg;
+	t_forks			**f_list;
+	pthread_t		*t_list;
+
+	i = 1;
+	if (!(arg = arg_check(ac, av)))
+		return (error_arg());
 	if (!(t_list = malloc(sizeof(pthread_t) * arg->ph)))
 		return (error_malloc());
 	i = 0;
-	last = init_forks(arg->ph - 1);
-	end = init_forks(-1);
-	fr = last;
+	if ((f_list = create_forks(arg)) == 0)
+		return (error_malloc());
 	while (i < arg->ph)
 	{
-		if (i == arg->ph - 1)
-		{
-			if (!(p = init_philo(arg, i, last, fr, end)))
-				return (error_malloc());
-		}
-		else if (i == 0)
-		{
-			fl = init_forks(i);
-			if (!(p = init_philo(arg, i, fl, last, end)))
-				return (error_malloc());
-		}
-		else
-		{
-			fl = init_forks(i);
-			if (!(p = init_philo(arg, i, fl, fr, end)))
-				return (error_malloc());
-		}
-		fr = fl;
-		pthread_create(p->th, 0, philo_do, p);
-		t_list[i] = *(p->th);
+		if (!(t_list[i] = run_philo(i, arg, f_list)))
+			return (error_malloc());
 		i++;
 	}
 	i = 0;
-	while (i < p->p.ph)
+	while (i < arg->ph)
 	{
 		pthread_join(t_list[i], NULL);
 		i++;
