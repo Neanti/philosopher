@@ -1,47 +1,42 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   struct.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: augay <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/02/04 09:45:38 by augay             #+#    #+#             */
-/*   Updated: 2021/02/04 09:45:39 by augay            ###   ########.fr       */
+/*   Created: 2021/01/27 13:54:14 by augay             #+#    #+#             */
+/*   Updated: 2021/02/04 07:37:04 by augay            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "utils.h"
+#ifndef STRUCT_H
+# define STRUCT_H
+# include "utils.h"
 
-int	error_arg(void)
-{
-	write(1, "Args error\n", 11);
-	return (1);
-}
+struct				s_fin{
+	sem_t			*end;
+	int				n;
+};
 
-int	error_thread(void)
-{
-	write(1, "Thread error\n", 13);
-	return (1);
-}
+typedef struct s_fin	t_fin;
 
-int	error_mutex(void)
-{
-	write(1, "Mutex error\n", 12);
-	return (1);
-}
+typedef struct	{
+	int				ph;
+	int				die;
+	int				eat;
+	int				sleep;
+	int				nb;
+}					t_param_philo;
 
-int	error_malloc(void)
-{
-	write(1, "Malloc error\n", 13);
-	return (1);
-}
+typedef struct	{
+	int				n;
+	t_param_philo	p;
+	sem_t			*pool;
+	pthread_t		*th;
+	sem_t			*txt;
+	struct timeval	start;
+	t_fin			*end;
+}					t_philo;
 
-int	ft_strlen(char *s)
-{
-	int i;
-
-	i = 0;
-	while (s[i])
-		i++;
-	return (i);
-}
+#endif
