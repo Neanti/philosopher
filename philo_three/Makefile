@@ -13,7 +13,7 @@
 NAME = philo_three
 OPTION = -c
 FLAG =
-SRC = main.c utils.c
+SRC = main.c utils.c die.c gestion.c philo_fork.c philo_utils.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

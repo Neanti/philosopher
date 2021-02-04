@@ -37,6 +37,7 @@ typedef struct	{
 	sem_t			*txt;
 	struct timeval	start;
 	t_fin			*end;
+	sem_t			*begin;
 }					t_philo;
 
 #endif

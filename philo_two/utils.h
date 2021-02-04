@@ -20,6 +20,7 @@
 # include <stdlib.h>
 # include <semaphore.h>
 # include <errno.h>
+
 # include "struct.h"
 
 int				error_arg();
