@@ -1,192 +1,101 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: augay <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/02/04 07:29:30 by augay             #+#    #+#             */
+/*   Updated: 2021/02/04 07:29:32 by augay            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "utils.h"
 
-extern int errno;
-
-philo *init_philo(param_philo *arg, int i, sem_t *pool, sem_t *txt, struct timeval start, fin *end)
+t_param_philo	*check_arg(int ac, char **av)
 {
-    philo *p;
-    pthread_t *t;
+	int				i;
+	t_param_philo	*arg;
 
-    if (!(p = malloc(sizeof(philo))))
-        return NULL;
-    if (!(t = malloc(sizeof(pthread_t))))
-        return NULL;
-    p->p = *arg;
-    p->n = i;
-    p->th = t;
-    p->pool = pool;
-    p->txt = txt;
-    p->start = start;
-    p->end = end;
-    return p;
+	i = 1;
+	if (ac < 5 || ac > 6)
+		return (0);
+	while (i < ac)
+	{
+		if (!is_number(av[i]))
+			return (0);
+		i++;
+	}
+	if ((arg = fill_arg(av, ac)) == NULL)
+		return (0);
+	return (arg);
 }
 
-long elapsed(struct timeval t)
+sem_t			**create_sem(t_param_philo *arg)
 {
-    struct timeval c;
+	sem_t	**list;
+	sem_t	*pool;
+	sem_t	*txt;
+	sem_t	*endf;
 
-    gettimeofday(&c, NULL);
-    return ((c.tv_sec * 1000000 + c.tv_usec) - (t.tv_sec * 1000000 + t.tv_usec)) / 1000;
+	if (!(list = malloc(sizeof(sem_t*) * 3)))
+		return (0);
+	sem_unlink("pool");
+	sem_unlink("txt");
+	sem_unlink("end");
+	txt = sem_open("txt", O_CREAT, S_IRWXU, 1);
+	pool = sem_open("pool", O_CREAT, S_IRWXU, arg->ph);
+	endf = sem_open("end", O_CREAT, S_IRWXU, 1);
+	list[0] = pool;
+	list[1] = endf;
+	list[2] = txt;
+	if (list == 0 || txt == 0 || pool == 0 || endf == 0)
+		return (0);
+	return (list);
 }
 
-void wrap_sleep(long t)
+void			ft_unlink(void)
 {
-    struct timeval v;
-    struct timeval f;
-    long val;
-
-    gettimeofday(&v, NULL);
-    gettimeofday(&f,NULL);
-    val = (f.tv_sec * 1000000 + f.tv_usec) - (v.tv_sec * 1000000 + v.tv_usec);
-    while(val < t)
-    {
-        usleep(50);
-        gettimeofday(&f, NULL);
-        val = (f.tv_sec * 1000000 + f.tv_usec) - (v.tv_sec * 1000000 + v.tv_usec);
-    }
-    return;
+	sem_unlink("txt");
+	sem_unlink("pool");
+	sem_unlink("end");
 }
 
-int time_diff(struct timeval last, struct timeval actual)
+pthread_t		c_philo(int i, t_param_philo *arg, sem_t **s_list, t_fin *end)
 {
-    return ((actual.tv_sec * 1000000 + actual.tv_usec) - (last.tv_sec * 1000000 + last.tv_usec)) / 1000;
+	t_philo		*p;
+
+	if (!(p = init_p(arg, i, s_list, end)))
+		return (0);
+	pthread_create(p->th, 0, philo_do, p);
+	return (*(p->th));
 }
 
-void *philo_do(void *arg)
+int				main(int ac, char **av)
 {
-    philo *p;
-    p = (philo *) arg;
-    struct timeval last;
-    int i;
+	int				i;
+	t_param_philo	*arg;
+	pthread_t		*t_list;
+	t_fin			*end;
+	sem_t			**s_list;
 
-    i = 0;
-    last = p->start;
-    if (p->n != 1)
-        usleep(500);
-    while (((elapsed(last) < p->p.die)) || (i == 0)) {
-        if ((p->p.nb > 0 && i == p->p.nb))
-            break;
-        if(p->end->n == 1)
-            break;
-        sem_wait(p->txt);
-        printf("%ld philo %d is thinking\n", elapsed(p->start),p->n + 1);
-        if(p->end->n == 1)
-            break;
-        sem_post(p->txt);
-//        printf("WAIT POO\n");
-        sem_wait(p->pool);
-        if(p->end->n == 1)
-            break;
-        sem_wait(p->txt);
-        printf("%ld philo %d has taken a fork\n",elapsed(p->start),p->n + 1);
-        sem_post(p->txt);
-        sem_wait(p->pool);
-        if(p->end->n == 1)
-            break;
-        sem_wait(p->txt);
-        printf("%ld philo %d has taken a fork\n",elapsed(p->start),p->n + 1);
-        if (elapsed(last) > p->p.die)
-        {
-            sem_post(p->txt);
-            if (p->end->n == -1)
-            {
-                sem_wait(p->end->end);
-                p->end->n = 1;
-                sem_post(p->end->end);
-            }
-            sem_post(p->pool);
-            sem_post(p->pool);
-            break;
-        }
-        gettimeofday(&last, 0);
-        printf("%ld philo %d is eating\n", elapsed(p->start),p->n + 1);
-        sem_post(p->txt);
-        if(p->end->n == 1)
-            break;
-        wrap_sleep(p->p.eat * 1000);
-        if(p->end->n == 1)
-            break;
-        sem_post(p->pool);
-        sem_post(p->pool);
-        sem_wait(p->txt);
-        printf("%ld philo %d is sleeping\n", elapsed(p->start),p->n + 1);
-        sem_post(p->txt);
-        wrap_sleep(p->p.sleep * 1000);
-        if(p->end->n == 1)
-            break;
-        i++;
-    }
-    sem_post(p->pool);
-    sem_post(p->pool);
-    sem_wait(p->txt);
-    printf("%ld philo %d died bc %ld||%d AND %d\n", elapsed(p->start),p->n + 1, elapsed(last), p->p.die, i);
-    sem_post(p->txt);
-    if (p->end->n == -1)
-    {
-        sem_wait(p->end->end);
-        p->end->n = 0;
-        sem_post(p->end->end);
-    }
-    return (void*)p;
-}
-
-int main(int ac, char **av)
-{
-    int i;
-    param_philo *arg;
-    philo *p;
-    sem_t *pool;
-    sem_t *endf;
-    pthread_t *t_list;
-    sem_t *txt;
-    struct timeval start;
-    fin *end;
-
-    sem_unlink("pool");
-    sem_unlink("txt");
-    sem_unlink("end");
-    i = 1;
-    if (ac < 5 || ac > 6)
-        return (error_arg());
-    while(i < ac)
-    {
-        if (!is_number(av[i]))
-            return error_arg();
-        i++;
-    }
-    if ((arg = fill_arg(av, ac)) == NULL)
-        return error_malloc();
-    if (!(t_list = malloc(sizeof(pthread_t) * arg->ph)))
-        return error_malloc();
-    if (!(end = malloc(sizeof(fin))))
-        return error_malloc();
-//    if (!(txt = malloc(sizeof(pthread_mutex_t))))
-//        return error_malloc();
-    txt = sem_open("txt", O_CREAT, S_IRWXU, 1);
-    i = 0;
-    pool = sem_open("pool", O_CREAT, S_IRWXU, arg->ph);
-    printf("arg ph %d\n", arg->ph);
-    sem_wait(pool);
-    sem_post(pool);
-    endf = sem_open("end", O_CREAT, S_IRWXU, 1);
-    end->end = endf;
-    end->n = -1;
-    gettimeofday(&start, NULL);
-    while(i < arg->ph)
-    {
-        if (!(p = init_philo(arg, i, pool, txt, start, end)))
-                return error_malloc();
-        pthread_create(p->th, 0, philo_do, p);
-        t_list[i] = *(p->th);
-        i++;
-    }
-    i = 0;
-    while(i < p->p.ph)
-    {
-        pthread_join(t_list[i], NULL);
-        i++;
-    }
-    sem_unlink("txt");
-    sem_unlink("pool");
-    sem_unlink("end");
+	if (!(arg = check_arg(ac, av)))
+		return (error_arg());
+	if (!(t_list = malloc(sizeof(pthread_t) * arg->ph)))
+		return (error_malloc());
+	if (!(end = malloc(sizeof(t_fin))))
+		return (error_malloc());
+	if ((s_list = create_sem(arg)) == 0)
+		return (error_mutex());
+	end->end = s_list[1];
+	end->n = -1;
+	i = -1;
+	while (++i < arg->ph)
+		if (!(t_list[i] = c_philo(i, arg, s_list, end)))
+			return (error_malloc());
+	i = 0;
+	while (i < arg->ph)
+		pthread_join(t_list[i++], NULL);
+	ft_unlink();
+	return (0);
 }
