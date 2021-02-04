@@ -37,7 +37,14 @@ void			*philo_do(void *arg)
 		i++;
 	}
 	disp_dead(p);
-	return ((void *)p);
+	//free(p->fr->m);
+	//free(p->fr);
+	//system("leaks philo_one");
+	free(p->txt);
+	free(p->th);
+//	free(&(p->p));
+	//free(p);
+	return ((void *)0);
 }
 
 t_forks			**create_forks(t_param_philo *arg)
@@ -99,6 +106,8 @@ pthread_t		run_philo(int i, t_param_philo *arg, t_forks **f_list)
 	return (*(p->th));
 }
 
+//leak: arg*2, main, init_philoE/S/M, create forks,
+
 int				main(int ac, char **av)
 {
 	int				i;
@@ -121,9 +130,24 @@ int				main(int ac, char **av)
 		i++;
 	}
 	i = 0;
+	t_philo *p;
+	void **rr = 0;
 	while (i < arg->ph)
 	{
-		pthread_join(t_list[i], NULL);
+		pthread_join(t_list[i], rr);
+		p = (t_philo*)*rr;
+		free(p);
 		i++;
 	}
+	free(arg);
+	free(t_list);
+	//free(f_list[0]->m);
+	//free(f_list[0]);
+	free(f_list[1]->m);
+	free(f_list[1]);
+	free(f_list[3]->m);
+	free(f_list[3]);
+	free(f_list);
+//	system("leaks philo_one");
+	return (0);
 }
