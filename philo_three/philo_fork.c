@@ -43,7 +43,7 @@ int				philo_do_1(t_philo *p, struct timeval *last)
 
 void			start_sync(struct timeval *last, t_philo *p)
 {
-	if (p->n == p->p.ph - 1)
+	if (p->n == p->p->ph - 1)
 	{
 		gettimeofday(last, 0);
 		gettimeofday(&(p->start), 0);
@@ -72,13 +72,13 @@ int				philo_do_body(struct timeval *last, t_philo *p)
 	sem_post(p->txt);
 	if (check_elapsed(p, *last) == 1)
 		return (1);
-	wrap_sleep(p->p.eat * 1000);
+	wrap_sleep(p->p->eat * 1000);
 	if (check_elapsed(p, *last) == 1)
 		return (1);
 	release_sem(p);
 	printf("%ld philo %d is sleeping\n", elapsed(p->start), p->n + 1);
 	sem_post(p->txt);
-	wrap_sleep(p->p.sleep * 1000);
+	wrap_sleep(p->p->sleep * 1000);
 	if (check_elapsed(p, *last) == 1)
 		return (1);
 	return (0);
@@ -93,9 +93,9 @@ void			*philo_do(void *arg)
 	i = 0;
 	p = (t_philo *)arg;
 	start_sync(&last, p);
-	while (((elapsed(last) < p->p.die)) || (i == 0))
+	while (((elapsed(last) < p->p->die)) || (i == 0))
 	{
-		if ((p->p.nb > 0 && i == p->p.nb))
+		if ((p->p->nb > 0 && i == p->p->nb))
 			break ;
 		if (philo_do_1(p, &last) == 1)
 			break ;
@@ -104,5 +104,8 @@ void			*philo_do(void *arg)
 		i++;
 	}
 	philo_die(p);
+	free(p->p);
+	free(p->th);
+	free(p);
 	exit(0);
 }

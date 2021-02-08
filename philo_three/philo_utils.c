@@ -15,19 +15,20 @@
 t_philo		*init_philo(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 {
 	t_philo			*p;
-	pthread_t		*t;
+//	pthread_t		*t;
 
 	if (!(p = malloc(sizeof(t_philo))))
 		return (NULL);
-	if (!(t = malloc(sizeof(pthread_t))))
-		return (NULL);
-	p->p = *arg;
+//	if (!(t = malloc(sizeof(pthread_t))))
+//		return (NULL);
+	p->p = arg;
 	p->n = i;
-	p->th = t;
+//	p->th = t;
 	p->pool = s_list[0];
 	p->txt = s_list[2];
 	p->end = end;
 	p->begin = s_list[3];
+//	free(arg);
 	return (p);
 }
 
@@ -69,7 +70,7 @@ int			check_elapsed(t_philo *p, struct timeval last)
 {
 	if (p->end->n == 1)
 		return (1);
-	if (elapsed(last) > p->p.die)
+	if (elapsed(last) > p->p->die)
 	{
 		if (p->end->n == -1)
 		{

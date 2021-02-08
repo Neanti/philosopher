@@ -31,9 +31,9 @@ typedef struct	{
 
 typedef struct	{
 	int				n;
-	t_param_philo	p;
+	t_param_philo	*p;
 	sem_t			*pool;
-	pthread_t		*th;
+	pid_t			*th;
 	sem_t			*txt;
 	struct timeval	start;
 	t_fin			*end;

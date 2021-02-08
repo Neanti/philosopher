@@ -37,9 +37,6 @@ void			*philo_do(void *arg)
 		i++;
 	}
 	disp_dead(p);
-	free(p->txt);
-	free(p->th);
-	free(p);
 	return ((void *)0);
 }
 
@@ -76,7 +73,7 @@ t_param_philo	*arg_check(int ac, char **av)
 	return (arg);
 }
 
-pthread_t		run_philo(int i, t_param_philo *arg, t_forks **f_list)
+t_philo		*run_philo(int i, t_param_philo *arg, t_forks **f_list)
 {
 	t_philo *p;
 
@@ -99,43 +96,79 @@ pthread_t		run_philo(int i, t_param_philo *arg, t_forks **f_list)
 	}
 	f_list[1] = f_list[0];
 	pthread_create(p->th, 0, philo_do, p);
-	return (*(p->th));
+	return (p);
 }
 
-//leak: arg*2, main, init_philoE/S/M, create forks,
 
 int				main(int ac, char **av)
 {
 	int				i;
 	t_param_philo	*arg;
 	t_forks			**f_list;
-	pthread_t		*t_list;
+	t_philo			**p;
 
 	if (!(arg = arg_check(ac, av)))
 		return (error_arg());
-	if (!(t_list = malloc(sizeof(pthread_t) * arg->ph)))
+	if (!(p = malloc(sizeof(t_philo*) * arg->ph)))
 		return (error_malloc());
 	i = 0;
 	if ((f_list = create_forks(arg)) == 0)
 		return (error_malloc());
 	while (i < arg->ph)
 	{
-		if (!(t_list[i] = run_philo(i, arg, f_list)))
+		if (!(p[i] = run_philo(i, arg, f_list)))
 			return (error_malloc());
 		i++;
 	}
 	i = 0;
 	while (i < arg->ph)
 	{
-		pthread_join(t_list[i], 0);
+		pthread_join(*(p[i]->th), 0);
 		i++;
 	}
+	i = 0;
+	if (p[i]->end->m != 0)
+	{
+		free(p[i]->end->m);
+		p[i]->end->m = 0;
+	}
+	if (p[i]->end != 0)
+	{
+		free(p[i]->end);
+		p[i]->end = 0;
+	}
+
+	while (i < arg->ph)
+	{
+		if (p[i]->fr->m != 0)
+		{
+			free(p[i]->fr->m);
+			p[i]->fr->m = 0;
+		}
+		if (p[i]->fr != 0)
+		{
+			free(p[i]->fr);
+			p[i]->fr = 0;
+		}
+		if (p[i]->txt != 0)
+		{
+			free(p[i]->txt);
+			p[i]->txt = 0;
+		}
+		if (p[i]->th != 0)
+		{
+			free(p[i]->th);
+			p[i]->th = 0;
+		}
+		if (p[i] != 0)
+		{
+			free(p[i]);
+			p[i] = 0;
+		}
+		i++;
+	}
+	free(p);
 	free(arg);
-	free(t_list);
-	free(f_list[1]->m);
-	free(f_list[1]);
-	free(f_list[3]->m);
-	free(f_list[3]);
 	free(f_list);
 	return (0);
 }
