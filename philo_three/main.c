@@ -63,7 +63,7 @@ sem_t			**prep_sem(t_param_philo *arg)
 	return (s_list);
 }
 
-t_philo			*body_main(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
+t_philo			*body_m(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 {
 	t_philo	*p;
 	pid_t	j;
@@ -71,7 +71,7 @@ t_philo			*body_main(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 	if (!(p = init_philo(arg, i, s_list, end)))
 		return (0);
 	if ((j = fork()) == 0)
-		philo_do((void *) p);
+		philo_do((void *)p);
 	else
 	{
 		p->th = j;
@@ -80,11 +80,33 @@ t_philo			*body_main(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 	return (0);
 }
 
+void			end_all(t_philo **p, sem_t **s_list, t_param_philo *arg)
+{
+	int i;
+
+	i = -1;
+	while (++i < arg->ph)
+		waitpid(-1, NULL, WUNTRACED);
+	i = 0;
+	sem_close(p[i]->txt);
+	sem_close(p[i]->end->end);
+	sem_close(p[i]->pool);
+	free(p[i]->end);
+	while (i < arg->ph)
+	{
+		free(p[i]);
+		i++;
+	}
+	free(s_list);
+	free(p);
+	free(arg);
+	ft_unlink();
+}
+
 int				main(int ac, char **av)
 {
 	int				i;
 	t_param_philo	*arg;
-//	pid_t			*t_list;
 	t_fin			*end;
 	sem_t			**s_list;
 	t_philo			**p;
@@ -101,24 +123,25 @@ int				main(int ac, char **av)
 	end->n = -1;
 	i = -1;
 	while (++i < arg->ph)
-		if ((p[i] = body_main(arg, i, s_list, end)) == 0)
+		if ((p[i] = body_m(arg, i, s_list, end)) == 0)
 			return (error_thread());
-	i = -1;
-	while (++i < arg->ph)
-		waitpid(-1, NULL, WUNTRACED);
-	i = 0;
-	sem_close(p[i]->txt);
-	sem_close(p[i]->end->end);
-	sem_close(p[i]->pool);
-	free(p[i]->end);
-	while(i < arg->ph)
-	{
-		free(p[i]);
-		i++;
-	}
-	free(s_list);
-	free(p);
-	free(arg);
-	ft_unlink();
+	end_all(p, s_list, arg);
+//	i = -1;
+//	while (++i < arg->ph)
+//		waitpid(-1, NULL, WUNTRACED);
+//	i = 0;
+//	sem_close(p[i]->txt);
+//	sem_close(p[i]->end->end);
+//	sem_close(p[i]->pool);
+//	free(p[i]->end);
+//	while (i < arg->ph)
+//	{
+//		free(p[i]);
+//		i++;
+//	}
+//	free(s_list);
+//	free(p);
+//	free(arg);
+//	ft_unlink();
 	return (0);
 }

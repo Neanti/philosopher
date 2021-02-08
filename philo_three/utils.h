@@ -23,7 +23,6 @@
 # include <signal.h>
 # include <sys/stat.h>
 # include <fcntl.h>
-//# include <wait.h>
 # include "struct.h"
 
 int				error_arg();

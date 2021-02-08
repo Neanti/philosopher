@@ -43,19 +43,20 @@ int				philo_do_1(t_philo *p, struct timeval *last)
 
 void			start_sync(struct timeval *last, t_philo *p)
 {
+
 	if (p->n == p->p->ph - 1)
 	{
+		sem_post(p->begin);
 		gettimeofday(last, 0);
 		gettimeofday(&(p->start), 0);
-		sem_post(p->begin);
 	}
 	else
 	{
 		sem_wait(p->begin);
-		sem_post(p->begin);
 		gettimeofday(last, 0);
 		gettimeofday(&(p->start), 0);
-		if (p->n % 1 == 0)
+		sem_post(p->begin);
+		if (p->n % 2 == 1)
 			usleep(500);
 	}
 }
@@ -104,8 +105,8 @@ void			*philo_do(void *arg)
 		i++;
 	}
 	philo_die(p);
-	sem_close(p->pool);
-	sem_close(p->txt);
+//	sem_close(p->pool);
+//	sem_close(p->txt);
 	free(p->p);
 	free(p);
 	exit(0);
