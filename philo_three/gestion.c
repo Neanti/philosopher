@@ -64,5 +64,6 @@ t_param_philo	*fill_arg(char **av, int ac)
 		p->nb = -1;
 	else
 		p->nb = t[4];
+	free(t);
 	return (p);
 }

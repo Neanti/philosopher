@@ -66,13 +66,11 @@ sem_t			**prep_sem(t_param_philo *arg)
 t_philo			*body_main(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 {
 	t_philo	*p;
-	pid_t	*j;
+	pid_t	j;
 
-	if ((j = malloc(sizeof(pid_t))) == 0)
-		return (0);
 	if (!(p = init_philo(arg, i, s_list, end)))
 		return (0);
-	if ((*j = fork()) == 0)
+	if ((j = fork()) == 0)
 		philo_do((void *) p);
 	else
 	{
@@ -115,7 +113,6 @@ int				main(int ac, char **av)
 	free(p[i]->end);
 	while(i < arg->ph)
 	{
-		free(p[i]->th);
 		free(p[i]);
 		i++;
 	}
