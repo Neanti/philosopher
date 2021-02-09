@@ -45,5 +45,7 @@ void			release_sem(t_philo *p);
 int				philo_do_body(struct timeval *last, t_philo *p);
 void			*philo_do(void *arg);
 void			philo_die(t_philo *p);
+void			end_all(t_philo **p, sem_t **s_list, t_param_philo *arg);
+int				ft_unlink(void);
 
 #endif

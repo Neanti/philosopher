@@ -73,7 +73,7 @@ t_param_philo	*arg_check(int ac, char **av)
 	return (arg);
 }
 
-t_philo		*run_philo(int i, t_param_philo *arg, t_forks **f_list)
+t_philo			*run_philo(int i, t_param_philo *arg, t_forks **f_list)
 {
 	t_philo *p;
 
@@ -99,7 +99,6 @@ t_philo		*run_philo(int i, t_param_philo *arg, t_forks **f_list)
 	return (p);
 }
 
-
 int				main(int ac, char **av)
 {
 	int				i;
@@ -120,55 +119,6 @@ int				main(int ac, char **av)
 			return (error_malloc());
 		i++;
 	}
-	i = 0;
-	while (i < arg->ph)
-	{
-		pthread_join(*(p[i]->th), 0);
-		i++;
-	}
-	i = 0;
-	if (p[i]->end->m != 0)
-	{
-		free(p[i]->end->m);
-		p[i]->end->m = 0;
-	}
-	if (p[i]->end != 0)
-	{
-		free(p[i]->end);
-		p[i]->end = 0;
-	}
-
-	while (i < arg->ph)
-	{
-		if (p[i]->fr->m != 0)
-		{
-			free(p[i]->fr->m);
-			p[i]->fr->m = 0;
-		}
-		if (p[i]->fr != 0)
-		{
-			free(p[i]->fr);
-			p[i]->fr = 0;
-		}
-		if (p[i]->txt != 0)
-		{
-			free(p[i]->txt);
-			p[i]->txt = 0;
-		}
-		if (p[i]->th != 0)
-		{
-			free(p[i]->th);
-			p[i]->th = 0;
-		}
-		if (p[i] != 0)
-		{
-			free(p[i]);
-			p[i] = 0;
-		}
-		i++;
-	}
-	free(p);
-	free(arg);
-	free(f_list);
+	free_all(p, arg, f_list);
 	return (0);
 }

@@ -41,5 +41,6 @@ void				disp_think(t_philo *p);
 t_philo				*init_philo_s(t_param_philo *arg, int i, t_forks **f_list);
 t_philo				*init_philo_m(t_param_philo *arg, int i, t_forks **f_list);
 t_philo				*init_philo_e(t_param_philo *arg, int i, t_forks **f_list);
+void				free_all(t_philo **p, t_param_philo *arg, t_forks **f_list);
 
 #endif

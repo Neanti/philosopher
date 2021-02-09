@@ -43,5 +43,7 @@ void			philo_body_2(t_philo *p);
 void			wrap(t_philo *p);
 void			*philo_do(void *arg);
 int				philo_body(t_philo *p, struct timeval *last);
+void			end_all(t_philo **p, t_param_philo *arg, sem_t **s_list);
+void			ft_unlink(void);
 
 #endif

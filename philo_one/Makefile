@@ -13,7 +13,7 @@
 NAME = philo_one
 OPTION = -c
 FLAG = -Wall -Wextra -Werror
-SRC = error.c gestion.c init_philo.c main.c philo.c utils.c
+SRC = error.c gestion.c init_philo.c main.c philo.c utils.c end.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

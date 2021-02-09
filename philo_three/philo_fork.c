@@ -43,7 +43,6 @@ int				philo_do_1(t_philo *p, struct timeval *last)
 
 void			start_sync(struct timeval *last, t_philo *p)
 {
-
 	if (p->n == p->p->ph - 1)
 	{
 		sem_post(p->begin);
@@ -105,8 +104,6 @@ void			*philo_do(void *arg)
 		i++;
 	}
 	philo_die(p);
-//	sem_close(p->pool);
-//	sem_close(p->txt);
 	free(p->p);
 	free(p);
 	exit(0);

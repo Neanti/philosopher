@@ -67,3 +67,27 @@ t_param_philo	*fill_arg(char **av, int ac)
 	free(t);
 	return (p);
 }
+
+void			end_all(t_philo **p, t_param_philo *arg, sem_t **s_list)
+{
+	int i;
+
+	i = 0;
+	while (i < arg->ph)
+		pthread_join(*(p[i++]->th), NULL);
+	i = 0;
+	sem_close(p[i]->txt);
+	sem_close(p[i]->end->end);
+	sem_close(p[i]->pool);
+	free(p[i]->end);
+	while (i < arg->ph)
+	{
+		free(p[i]->th);
+		free(p[i]);
+		i++;
+	}
+	free(s_list);
+	free(p);
+	free(arg);
+	ft_unlink();
+}

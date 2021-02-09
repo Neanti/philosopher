@@ -75,15 +75,12 @@ int				main(int ac, char **av)
 {
 	int				i;
 	t_param_philo	*arg;
-//	pthread_t		*t_list;
 	t_fin			*end;
 	sem_t			**s_list;
 	t_philo			**p;
 
 	if (!(arg = check_arg(ac, av)))
 		return (error_arg());
-//	if (!(t_list = malloc(sizeof(pthread_t) * arg->ph)))
-//		return (error_malloc());
 	if (!(p = malloc(sizeof(t_philo*) * arg->ph)))
 		return (error_malloc());
 	if (!(end = malloc(sizeof(t_fin))))
@@ -96,26 +93,6 @@ int				main(int ac, char **av)
 	while (++i < arg->ph)
 		if (!(p[i] = c_philo(i, arg, s_list, end)))
 			return (error_malloc());
-	i = 0;
-	while (i < arg->ph)
-		pthread_join(*(p[i++]->th), NULL);
-	i = 0;
-	sem_close(p[i]->txt);
-	sem_close(p[i]->end->end);
-	sem_close(p[i]->pool);
-//	free(p[i]->txt);
-//	free(p[i]->end->end);
-	free(p[i]->end);
-//	free(p[i]->pool);
-	while(i < arg->ph)
-	{
-		free(p[i]->th);
-		free(p[i]);
-		i++;
-	}
-	free(s_list);
-	free(p);
-	free(arg);
-	ft_unlink();
+	end_all(p, arg, s_list);
 	return (0);
 }

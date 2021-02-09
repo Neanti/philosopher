@@ -80,29 +80,6 @@ t_philo			*body_m(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 	return (0);
 }
 
-void			end_all(t_philo **p, sem_t **s_list, t_param_philo *arg)
-{
-	int i;
-
-	i = -1;
-	while (++i < arg->ph)
-		waitpid(-1, NULL, WUNTRACED);
-	i = 0;
-	sem_close(p[i]->txt);
-	sem_close(p[i]->end->end);
-	sem_close(p[i]->pool);
-	free(p[i]->end);
-	while (i < arg->ph)
-	{
-		free(p[i]);
-		i++;
-	}
-	free(s_list);
-	free(p);
-	free(arg);
-	ft_unlink();
-}
-
 int				main(int ac, char **av)
 {
 	int				i;
@@ -126,22 +103,5 @@ int				main(int ac, char **av)
 		if ((p[i] = body_m(arg, i, s_list, end)) == 0)
 			return (error_thread());
 	end_all(p, s_list, arg);
-//	i = -1;
-//	while (++i < arg->ph)
-//		waitpid(-1, NULL, WUNTRACED);
-//	i = 0;
-//	sem_close(p[i]->txt);
-//	sem_close(p[i]->end->end);
-//	sem_close(p[i]->pool);
-//	free(p[i]->end);
-//	while (i < arg->ph)
-//	{
-//		free(p[i]);
-//		i++;
-//	}
-//	free(s_list);
-//	free(p);
-//	free(arg);
-//	ft_unlink();
 	return (0);
 }
