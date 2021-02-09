@@ -75,8 +75,8 @@ void			*philo_do(void *arg)
 	p = (t_philo *)arg;
 	i = 0;
 	last = p->start;
-	if (p->n != 1)
-		usleep(500);
+	if (p->n == 0 || p->n == 2)
+		usleep(1000);
 	while (((elapsed(last) < p->p.die)) || (i == 0))
 	{
 		if ((p->p.nb > 0 && i == p->p.nb))
