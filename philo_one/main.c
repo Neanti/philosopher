@@ -33,7 +33,7 @@ void			*philo_do(void *arg)
 		if (take_forks(p, last) == -1)
 			break ;
 		gettimeofday(&last, 0);
-		export_one(p);
+		export_one(p, last);
 		i++;
 	}
 	disp_dead(p);
@@ -69,6 +69,8 @@ t_param_philo	*arg_check(int ac, char **av)
 		i++;
 	}
 	if ((arg = fill_arg(av, ac)) == NULL)
+		return (0);
+	if (arg->ph == 1 || arg->ph == 0)
 		return (0);
 	return (arg);
 }

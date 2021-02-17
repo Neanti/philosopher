@@ -35,7 +35,7 @@ void				wrap_sleep(long t);
 int					time_diff(struct timeval last, struct timeval actual);
 int					check_elapsed(t_philo *p, struct timeval last);
 int					take_forks(t_philo *p, struct timeval last);
-void				export_one(t_philo *p);
+void				export_one(t_philo *p, struct timeval last);
 void				disp_dead(t_philo *p);
 void				disp_think(t_philo *p);
 t_philo				*init_philo_s(t_param_philo *arg, int i, t_forks **f_list);

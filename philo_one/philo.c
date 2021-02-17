@@ -23,6 +23,9 @@ int				check_elapsed(t_philo *p, struct timeval last)
 			pthread_mutex_lock(p->end->m);
 			p->end->n = 1;
 			pthread_mutex_unlock(p->end->m);
+			pthread_mutex_lock(p->txt);
+			printf("%ld philo %d died\n", elapsed(p->start), p->n + 1);
+			pthread_mutex_unlock(p->txt);
 		}
 		return (-1);
 	}
@@ -55,7 +58,7 @@ int				take_forks(t_philo *p, struct timeval last)
 	return (0);
 }
 
-void			export_one(t_philo *p)
+void			export_one(t_philo *p, struct timeval last)
 {
 	printf("%ld philo %d is eating\n", elapsed(p->start), p->n + 1);
 	pthread_mutex_unlock(p->txt);
@@ -63,6 +66,8 @@ void			export_one(t_philo *p)
 	pthread_mutex_unlock(p->fr->m);
 	pthread_mutex_unlock(p->fl->m);
 	pthread_mutex_lock(p->txt);
+	if (check_elapsed(p, last) == -1)
+		return ;
 	printf("%ld philo %d is sleeping\n", elapsed(p->start), p->n + 1);
 	pthread_mutex_unlock(p->txt);
 	wrap_sleep(p->p.sleep * 1000);
@@ -72,9 +77,6 @@ void			disp_dead(t_philo *p)
 {
 	pthread_mutex_unlock(p->fl->m);
 	pthread_mutex_unlock(p->fr->m);
-	pthread_mutex_lock(p->txt);
-	printf("%ld philo %d died\n", elapsed(p->start), p->n + 1);
-	pthread_mutex_unlock(p->txt);
 }
 
 void			disp_think(t_philo *p)
