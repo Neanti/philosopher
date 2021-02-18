@@ -24,6 +24,7 @@ t_philo		*init_philo(t_param_philo *arg, int i, sem_t **s_list, t_fin *end)
 	p->txt = s_list[2];
 	p->end = end;
 	p->begin = s_list[3];
+	p->end_all = s_list[4];
 	return (p);
 }
 
@@ -71,6 +72,10 @@ int			check_elapsed(t_philo *p, struct timeval last)
 		{
 			sem_wait(p->end->end);
 			p->end->n = 1;
+			sem_wait(p->txt);
+			printf("%ld philo %d died\n", elapsed(p->start), p->n + 1);
+			sem_post(p->txt);
+			sem_post(p->end_all);
 			sem_post(p->end->end);
 		}
 		sem_post(p->txt);

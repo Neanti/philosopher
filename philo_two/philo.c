@@ -45,19 +45,22 @@ void			end_philo(t_philo *p)
 {
 	sem_post(p->pool);
 	sem_post(p->pool);
-	sem_wait(p->txt);
-	printf("%ld philo %d died\n", elapsed(p->start), p->n + 1);
-	sem_post(p->txt);
 }
 
-void			philo_body_2(t_philo *p)
+int				philo_body_2(t_philo *p, struct timeval last)
 {
 	sem_post(p->pool);
 	sem_post(p->pool);
 	sem_wait(p->txt);
+	if (check_elapsed(p, last) == 1)
+	{
+		sem_post(p->txt);
+		return (1);
+	}
 	printf("%ld philo %d is sleeping\n", elapsed(p->start), p->n + 1);
 	sem_post(p->txt);
 	wrap_sleep(p->p.sleep * 1000);
+	return (0);
 }
 
 void			wrap(t_philo *p)
@@ -75,8 +78,8 @@ void			*philo_do(void *arg)
 	p = (t_philo *)arg;
 	i = 0;
 	last = p->start;
-	if (p->n == 0 || p->n == 2)
-		usleep(1000);
+	if (p->n % 2 == 0)
+		usleep(200);
 	while (((elapsed(last) < p->p.die)) || (i == 0))
 	{
 		if ((p->p.nb > 0 && i == p->p.nb))
@@ -84,9 +87,8 @@ void			*philo_do(void *arg)
 		if (check_elapsed(p, last) == 1)
 			break ;
 		wrap(p);
-		if (philo_body(p, &last) == 1)
+		if (philo_body(p, &last) == 1 || philo_body_2(p, last) == 1)
 			break ;
-		philo_body_2(p);
 		if (check_elapsed(p, last) == 1)
 			break ;
 		i++;

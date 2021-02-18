@@ -12,7 +12,7 @@
 
 #include "utils.h"
 
-int				philo_do_1(t_philo *p, struct timeval *last)
+int				philo_do_1(t_philo *p, struct timeval *last, int i)
 {
 	if (check_elapsed(p, *last) == 1)
 		return (1);
@@ -48,15 +48,16 @@ void			start_sync(struct timeval *last, t_philo *p)
 		sem_post(p->begin);
 		gettimeofday(last, 0);
 		gettimeofday(&(p->start), 0);
+		usleep(100);
 	}
 	else
 	{
 		sem_wait(p->begin);
+		sem_post(p->begin);
 		gettimeofday(last, 0);
 		gettimeofday(&(p->start), 0);
-		sem_post(p->begin);
-		if (p->n % 2 == 1)
-			usleep(500);
+		if (p->n % 2 == 0)
+			usleep(100);
 	}
 }
 
@@ -97,14 +98,17 @@ void			*philo_do(void *arg)
 	{
 		if ((p->p->nb > 0 && i == p->p->nb))
 			break ;
-		if (philo_do_1(p, &last) == 1)
+		if (philo_do_1(p, &last, i) == 1)
 			break ;
+		if (i + 1 == p->p->nb)
+		{
+			sem_post(p->txt);
+			break ;
+		}
 		if (philo_do_body(&last, p) == 1)
 			break ;
 		i++;
 	}
 	philo_die(p);
-	free(p->p);
-	free(p);
-	exit(0);
+	exit(wrap_free(p));
 }

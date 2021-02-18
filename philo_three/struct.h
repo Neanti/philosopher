@@ -38,6 +38,7 @@ typedef struct	{
 	struct timeval	start;
 	t_fin			*end;
 	sem_t			*begin;
+	sem_t			*end_all;
 }					t_philo;
 
 #endif

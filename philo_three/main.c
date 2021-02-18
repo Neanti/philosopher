@@ -34,6 +34,7 @@ t_param_philo	*check_arg(int ac, char **av)
 int				ft_unlink(void)
 {
 	sem_unlink("pool");
+	sem_unlink("end_all");
 	sem_unlink("txt");
 	sem_unlink("end");
 	sem_unlink("begin");
@@ -45,18 +46,21 @@ sem_t			**prep_sem(t_param_philo *arg)
 	sem_t	*pool;
 	sem_t	*endf;
 	sem_t	*begin;
+	sem_t	*end_all;
 	sem_t	**s_list;
 
 	ft_unlink();
-	if (!(s_list = malloc(sizeof(sem_t*) * 4)))
+	if (!(s_list = malloc(sizeof(sem_t*) * 5)))
 		return (0);
 	s_list[2] = sem_open("txt", O_CREAT, S_IRWXU | S_IRWXG | S_IRWXU, 1);
 	pool = sem_open("pool", O_CREAT, S_IRWXU | S_IRWXG | S_IRWXU, arg->ph);
 	endf = sem_open("end", O_CREAT, S_IRWXU | S_IRWXG | S_IRWXU, 1);
 	begin = sem_open("begin", O_CREAT, S_IRWXU | S_IRWXG | S_IRWXU, 1);
+	end_all = sem_open("end_all", O_CREAT, S_IRWXU | S_IRWXG | S_IRWXU, 1);
 	s_list[0] = pool;
 	s_list[1] = endf;
 	s_list[3] = begin;
+	s_list[4] = end_all;
 	sem_wait(begin);
 	if (pool == 0 || endf == 0 || s_list[2] == 0 || begin == 0)
 		return (0);
@@ -98,6 +102,9 @@ int				main(int ac, char **av)
 		return (error_mutex());
 	end->end = s_list[1];
 	end->n = -1;
+	printf("WAIT\n");
+	sem_wait(s_list[4]);
+	printf("not  wait\n");
 	i = -1;
 	while (++i < arg->ph)
 		if ((p[i] = body_m(arg, i, s_list, end)) == 0)

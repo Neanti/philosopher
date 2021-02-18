@@ -39,7 +39,7 @@ long			elapsed(struct timeval t);
 void			wrap_sleep(long t);
 int				time_diff(struct timeval last, struct timeval actual);
 int				check_elapsed(t_philo *p, struct timeval last);
-int				philo_do_1(t_philo *p, struct timeval *last);
+int				philo_do_1(t_philo *p, struct timeval *last, int i);
 void			start_sync(struct timeval *last, t_philo *p);
 void			release_sem(t_philo *p);
 int				philo_do_body(struct timeval *last, t_philo *p);
@@ -47,5 +47,6 @@ void			*philo_do(void *arg);
 void			philo_die(t_philo *p);
 void			end_all(t_philo **p, sem_t **s_list, t_param_philo *arg);
 int				ft_unlink(void);
+int				wrap_free(t_philo *p);
 
 #endif
