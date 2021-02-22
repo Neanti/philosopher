@@ -80,7 +80,7 @@ void			*philo_do(void *arg)
 	last = p->start;
 	if (p->n % 2 == 0)
 		usleep(200);
-	while (((elapsed(last) < p->p.die)) || (i == 0))
+	while (1)
 	{
 		if ((p->p.nb > 0 && i == p->p.nb))
 			break ;

@@ -12,7 +12,7 @@
 
 NAME = philo_three
 OPTION = -c
-FLAG =
+FLAG = -Wall -Werror -Wextra
 SRC = main.c utils.c die.c gestion.c philo_fork.c philo_utils.c
 OBJ = $(SRC:.c=.o)
 

@@ -94,7 +94,7 @@ void			*philo_do(void *arg)
 	i = 0;
 	p = (t_philo *)arg;
 	start_sync(&last, p);
-	while (((elapsed(last) < p->p->die)) || (i == 0))
+	while (1)
 	{
 		if ((p->p->nb > 0 && i == p->p->nb))
 			break ;

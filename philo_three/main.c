@@ -102,9 +102,7 @@ int				main(int ac, char **av)
 		return (error_mutex());
 	end->end = s_list[1];
 	end->n = -1;
-	printf("WAIT\n");
 	sem_wait(s_list[4]);
-	printf("not  wait\n");
 	i = -1;
 	while (++i < arg->ph)
 		if ((p[i] = body_m(arg, i, s_list, end)) == 0)
